@@ -1,0 +1,28 @@
+# --- secrets: never commit ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+!docker/nginx/certs/.gitkeep
+auth.json
+
+# --- runtime state ---
+data/
+volumes/
+backups/
+*.sql
+*.sql.gz
+*.log
+logs/
+
+# --- tooling ---
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.idea/
+.vscode/
+*.bak
