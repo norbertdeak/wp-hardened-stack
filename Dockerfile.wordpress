@@ -1,0 +1,37 @@
+# WordPress + WooCommerce on a pinned, patched PHP.
+# The base tag is passed in from the version gate — never `latest`.
+ARG PHP_VERSION=8.3
+FROM php:${PHP_VERSION}-fpm-alpine
+
+ARG WORDPRESS_VERSION=6.8
+
+# Runtime deps: extensions WooCommerce and the object cache need.
+RUN set -eux; \
+    apk add --no-cache --virtual .build-deps $PHPIZE_DEPS; \
+    apk add --no-cache icu-libs libzip libpng libjpeg-turbo freetype tzdata curl; \
+    docker-php-ext-install -j"$(nproc)" pdo_mysql mysqli opcache intl zip; \
+    pecl install redis; docker-php-ext-enable redis; \
+    apk del .build-deps; \
+    rm -rf /var/cache/apk/*
+
+# Hardened PHP config (see docker/php/php.ini)
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-hardening.ini
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/zz-www.conf
+
+# WordPress core, pinned. The gate checks this version too.
+RUN set -eux; \
+    curl -fsSL "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz" -o /tmp/wp.tar.gz; \
+    mkdir -p /var/www/html; \
+    tar -xzf /tmp/wp.tar.gz -C /var/www/html --strip-components=1; \
+    rm /tmp/wp.tar.gz; \
+    chown -R www-data:www-data /var/www/html
+
+# Run as a non-root user; php-fpm master is the only privileged process.
+USER www-data
+WORKDIR /var/www/html
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
+    CMD php -r 'exit(@fsockopen("127.0.0.1",9000)?0:1);'
+
+EXPOSE 9000
+CMD ["php-fpm", "-F"]

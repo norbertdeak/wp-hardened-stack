@@ -1,0 +1,8 @@
+{
+  "$comment": "Minimum security-acceptable versions. Offline fallback for the version gate; the gate prefers endoflife.date when the network is available.",
+  "php": { "min": "8.2.29", "eol_below": "8.1", "note": "8.2+ only; 8.1 is end-of-life" },
+  "nginx": { "min": "1.24.0", "eol_below": "1.24", "note": "1.24 is the oldest line still receiving fixes" },
+  "mariadb": { "min": "10.11.0", "eol_below": "10.11", "note": "10.11 LTS or newer" },
+  "redis": { "min": "7.2.0", "eol_below": "7.2", "note": "7.2+; 6.x is EOL" },
+  "wordpress": { "min": "6.7.0", "eol_below": "6.5", "note": "6.7+; security releases are backported only to recent branches" }
+}
