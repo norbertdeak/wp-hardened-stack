@@ -1,0 +1,7 @@
+# Every change needs a review from the operator who owns the deployment.
+*       @norbertdeak
+
+# Security-relevant paths get an explicit owner marker in the PR template.
+/docs/SECURITY.md        @norbertdeak
+/docker/nginx/           @norbertdeak
+/scripts/lib/            @norbertdeak

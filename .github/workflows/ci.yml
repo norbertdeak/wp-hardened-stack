@@ -1,0 +1,31 @@
+name: ci
+
+on:
+  push: { branches: [main] }
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: unit tests
+        run: python3 -m unittest discover -s tests -v
+      - name: shell syntax
+        run: for f in scripts/*.sh; do bash -n "$f"; done
+      - name: no secrets in tree
+        run: |
+          ! grep -rInE '(BEGIN (RSA|OPENSSH) PRIVATE KEY|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{32})' \
+            --exclude-dir=.git . || (echo "secret-like string found" && exit 1)
+      - name: no floating tags
+        run: '! grep -nE "image:.*:latest" docker-compose*.yml'
+      - name: compose config
+        run: |
+          cp .env.example .env
+          sed -i 's/__CHANGE_ME__/test-only-value/g' .env
+          docker compose config -q
